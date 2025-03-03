@@ -96,3 +96,36 @@ def generar_regresión(valores, tiempos, grado=1):
     print(f"   y = {eq_str}")
     print(f"📊 **Coeficiente de determinación R²:** {r2:.4f}")
     print(f"📁 Imagen guardada: {regression_path}")
+    
+def menu():
+    """Menú interactivo para elegir qué análisis realizar."""
+    while True:
+        print("\n📊 **Análisis Empírico**")
+        print("1. Medir tiempos de ejecución")
+        print("2. Generar gráfico de dispersión")
+        print("3. Generar regresión polinomial")
+        print("4. Ejecutar todo")
+        print("5. Salir")
+        
+        opcion = input("Seleccione una opción (1-5): ").strip()
+        
+        if opcion == "1":
+            valores, tiempos = medir_tiempos(100)  # 🔹 Probamos con más datos
+        elif opcion == "2":
+            valores, tiempos = medir_tiempos(100)
+            generar_dispersión(valores, tiempos)
+        elif opcion == "3":
+            valores, tiempos = medir_tiempos(100)
+            generar_regresión(valores, tiempos)
+        elif opcion == "4":
+            valores, tiempos = medir_tiempos(1000)
+            generar_dispersión(valores, tiempos)
+            generar_regresión(valores, tiempos)
+        elif opcion == "5":
+            print("🔚 Saliendo del análisis empírico.")
+            break
+        else:
+            print("❌ Opción inválida, intenta nuevamente.")
+
+if __name__ == "__main__":
+    menu()
