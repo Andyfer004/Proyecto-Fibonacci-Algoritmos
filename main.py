@@ -17,7 +17,7 @@ def calcular_fibonacci():
 
     print("\n✨ --- TRAZA DE EJECUCIÓN --- ✨")
     for i, config in enumerate(traza):
-        cinta_estilizada = "".join(config['cinta']).replace('0', '⬜').replace('1', '🟩')
+        cinta_estilizada = "".join(config['cinta']).replace('0', '0').replace('1', '1')
         print(f"🔹 Paso {i+1}: Estado = {config['estado']}, Cinta = [{cinta_estilizada}], Cabezal = {config['cabezal']}")
 
     print("\n🎉 --- RESULTADO FINAL --- 🎉")
