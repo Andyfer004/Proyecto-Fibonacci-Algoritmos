@@ -1,0 +1,39 @@
+{
+  "estados": [
+    "q0",
+    "qCheck",
+    "qSum",
+    "qUpdate",
+    "qDecrement",
+    "qAccept"
+  ],
+  "estado_inicial": "q0",
+  "estados_finales": ["qAccept"],
+  "transiciones": {
+    "q0": {
+      "condicion": "IF_N_LE_2",
+      "si_cumple": "qAccept",
+      "si_no_cumple": "qCheck"
+    },
+    "qCheck": {
+      "condicion": "IF_COUNTER_GT_0",
+      "si_cumple": "qSum",
+      "si_no_cumple": "qAccept"
+    },
+    "qSum": {
+      "accion": "SUM_TAPE2_TAPE3_TO_TAPE4",
+      "siguiente": "qUpdate"
+    },
+    "qUpdate": {
+      "accion": "TAPE2_EQUALS_TAPE3_AND_TAPE3_EQUALS_TAPE4",
+      "siguiente": "qDecrement"
+    },
+    "qDecrement": {
+      "accion": "COUNTER_MINUS_1",
+      "siguiente": "qCheck"
+    },
+    "qAccept": {
+      "accion": "STOP"
+    }
+  }
+}
