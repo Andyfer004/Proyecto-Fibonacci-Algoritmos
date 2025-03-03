@@ -36,3 +36,17 @@ def medir_tiempos(max_n):
         print(f"  - Fibonacci({n}): {tiempo_total:.8f} s")  # Mayor precisión en la impresión
 
     return valores, tiempos
+
+def generar_dispersión(valores, tiempos):
+    """Genera gráfico de dispersión."""
+    scatter_path = os.path.join(RESULTS_DIR, "scatter_plot.png")
+    plt.figure(figsize=(8, 5))
+    plt.scatter(valores, tiempos, color='blue', label="Datos observados", alpha=0.7)
+    plt.xlabel("Número de Fibonacci (n)")
+    plt.ylabel("Tiempo de ejecución (s)")
+    plt.title("Tiempo de ejecución de la Máquina de Turing")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.savefig(scatter_path)
+    plt.close()
+    print(f"📁 Imagen guardada: {scatter_path}")
