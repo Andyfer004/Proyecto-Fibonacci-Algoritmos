@@ -1,16 +1,12 @@
 import json
 
-class MultiTapeTuringMachine:
+class SingleTapeTuringMachine:
     """
-    Simula una máquina de Turing multi-cinta para Fibonacci.
-    - Cinta1: counter (n-2)
-    - Cinta2: F(n-2)
-    - Cinta3: F(n-1)
-    - Cinta4: área de trabajo (suma)
+    Simula una Máquina de Turing de UNA SOLA CINTA para calcular Fibonacci.
+    La cinta almacena: n F(n-2) F(n-1) F(n) _ _ _ _
     """
 
     def __init__(self, config_file, n):
-        # Carga la config de un JSON
         with open(config_file, "r") as f:
             config = json.load(f)
 
@@ -19,97 +15,89 @@ class MultiTapeTuringMachine:
         self.estados_finales = config["estados_finales"]
         self.transiciones = config["transiciones"]
 
-        # Inicializamos las cintas (valores enteros)
-        self.n = n
-        if n <= 2:
-            self.counter = 0
-        else:
-            self.counter = n - 2  # Cinta1
-
-        self.tape2 = 1  # F(1)
-        self.tape3 = 1  # F(2)
-        self.tape4 = 0  # Área de trabajo
-
         self.estado_actual = self.estado_inicial
-        self.traza = []  # Guarda la configuración tras cada transición
+
+        # Inicializamos la cinta con el formato: n F(n-2) F(n-1) _
+        self.cinta = ["_"] * 10  # Espacios vacíos para cálculos
+        self.cinta[0] = str(n)  # n
+        self.cinta[1] = "1"  # F(n-2) = 1
+        self.cinta[2] = "1"  # F(n-1) = 1
+        self.head = 3  # Apunta donde se calculará F(n)
+
+        self.traza = []  # Guardar la configuración tras cada transición
 
     def get_configuracion(self):
         """
-        Retorna un dict con la configuración actual:
-        - estado
-        - counter, tape2, tape3, tape4
+        Retorna el estado y la cinta en su estado actual.
         """
         return {
             "estado": self.estado_actual,
-            "cinta1_counter": self.counter,
-            "cinta2_f_k_minus_2": self.tape2,
-            "cinta3_f_k_minus_1": self.tape3,
-            "cinta4_work": self.tape4
+            "cinta": " ".join(self.cinta),
+            "cabezal": self.head
         }
 
     def paso(self):
         """
-        Ejecuta una transición según el estado_actual y las condiciones/acciones
-        definidas en self.transiciones.
+        Ejecuta una transición según el estado actual y la cinta.
         """
         if self.estado_actual not in self.transiciones:
-            # No hay transición -> se detiene
             return
 
         info_estado = self.transiciones[self.estado_actual]
 
-        # Verificamos si hay una 'condicion' que determina bifurcación
+        # Leer valores de la cinta
+        n = int(self.cinta[0]) if self.cinta[0] != "_" else 0
+        f_k_minus_2 = int(self.cinta[1]) if self.cinta[1] != "_" else 0
+        f_k_minus_1 = int(self.cinta[2]) if self.cinta[2] != "_" else 0
+
+        # Condiciones de bifurcación
         if "condicion" in info_estado:
             condicion = info_estado["condicion"]
-
             if condicion == "IF_N_LE_2":
-                # Si n <= 2 -> si_cumple, si no -> si_no_cumple
-                if self.n <= 2:
-                    self.estado_actual = info_estado["si_cumple"]
-                else:
-                    self.estado_actual = info_estado["si_no_cumple"]
-
+                self.estado_actual = info_estado["si_cumple"] if n <= 2 else info_estado["si_no_cumple"]
             elif condicion == "IF_COUNTER_GT_0":
-                if self.counter > 0:
-                    self.estado_actual = info_estado["si_cumple"]
-                else:
-                    self.estado_actual = info_estado["si_no_cumple"]
+                self.estado_actual = info_estado["si_cumple"] if n > 2 else info_estado["si_no_cumple"]
 
-        # Verificamos si hay una 'accion' que realizar
+        # Acciones de la máquina
         if "accion" in info_estado:
             accion = info_estado["accion"]
 
             if accion == "SUM_TAPE2_TAPE3_TO_TAPE4":
-                self.tape4 = self.tape2 + self.tape3
+                suma = f_k_minus_2 + f_k_minus_1
+                self.cinta[self.head] = str(suma)  # Escribimos en la cinta
 
             elif accion == "TAPE2_EQUALS_TAPE3_AND_TAPE3_EQUALS_TAPE4":
-                self.tape2 = self.tape3
-                self.tape3 = self.tape4
-                self.tape4 = 0  # limpiar la cinta4
+                self.cinta[1] = self.cinta[2]  # F(n-2) ← F(n-1)
+                self.cinta[2] = self.cinta[self.head]  # F(n-1) ← F(n)
+                self.cinta[self.head] = "_"  # Limpiar espacio de trabajo
 
             elif accion == "COUNTER_MINUS_1":
-                self.counter -= 1
+                self.cinta[0] = str(n - 1)  # Decrementamos n
 
             elif accion == "STOP":
-                # Estamos en un estado final, no hacemos nada especial
-                pass
+                pass  # No hace nada, termina
 
-        # Verificamos si hay un 'siguiente' estado (lineal, sin bifurcación)
+        # Estado siguiente lineal
         if "siguiente" in info_estado:
             self.estado_actual = info_estado["siguiente"]
 
     def run(self):
         """
-        Ejecuta hasta que se alcance un estado final o no exista transición.
-        Retorna (fibonacci, traza).
+        Ejecuta la máquina hasta alcanzar un estado final.
         """
-        # Guardamos la config inicial
         self.traza.append(self.get_configuracion())
 
-        while (self.estado_actual not in self.estados_finales and 
-               self.estado_actual in self.transiciones):
+        while self.estado_actual not in self.estados_finales:
             self.paso()
             self.traza.append(self.get_configuracion())
 
-        # Al final, F(n) está en tape3
-        return self.tape3, self.traza
+        return self.cinta[2], self.traza  # F(n) está en la posición 2
+
+
+# Ejemplo de uso
+config_file = "machine_config.json"
+n = 6  # Calculamos F(6)
+machine = SingleTapeTuringMachine(config_file, n)
+resultado, traza = machine.run()
+
+

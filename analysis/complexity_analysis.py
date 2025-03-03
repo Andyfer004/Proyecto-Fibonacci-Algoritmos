@@ -7,7 +7,7 @@ import os
 # Asegurar que se pueda importar la Máquina de Turing desde cualquier parte
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from turing_machine import MultiTapeTuringMachine
+from turing_machine import SingleTapeTuringMachine
 
 # Obtener ruta absoluta del archivo de configuración
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -24,7 +24,7 @@ def medir_tiempos(max_n=50):
 
     for n in valores:
         inicio = time.perf_counter()
-        maquina = MultiTapeTuringMachine(CONFIG_PATH, n)
+        maquina = SingleTapeTuringMachine(CONFIG_PATH, n)
         maquina.run()
         fin = time.perf_counter()
         tiempos.append(fin - inicio)
