@@ -50,3 +50,32 @@ def generar_dispersión(valores, tiempos):
     plt.savefig(scatter_path)
     plt.close()
     print(f"📁 Imagen guardada: {scatter_path}")
+
+def generar_regresión(valores, tiempos, grado=1):
+    """Genera regresión polinomial con mejor ajuste y muestra ecuación + R²."""
+
+    # Filtrar posibles datos anómalos
+    if len(valores) > 1:
+        valores = valores[1:]  # ❌ Eliminamos el primer dato anómalo
+        tiempos = tiempos[1:]  # ❌ Eliminamos el primer tiempo anómalo
+
+    # Ajustar polinomio
+    coeficientes = np.polyfit(valores, tiempos, deg=grado)
+    polinomio = np.poly1d(coeficientes)
+
+    # Generar valores suavizados para la curva de ajuste
+    valores_suavizados = np.linspace(min(valores), max(valores), 100)
+    tiempos_predichos = polinomio(valores_suavizados)
+
+    # Calcular R²
+    tiempos_ajustados = polinomio(valores)
+    r2 = r2_score(tiempos, tiempos_ajustados)
+
+    # Formatear ecuación de la regresión
+    eq_str = " + ".join([f"{coef:.6f}x^{i}" if i > 0 else f"{coef:.6f}" for i, coef in enumerate(reversed(coeficientes))])
+
+  
+    
+    print(f"\n📈 **Ecuación de la regresión:**")
+    print(f"   y = {eq_str}")
+    
