@@ -37,7 +37,7 @@ def medir_tiempos(max_n):
 
     return valores, tiempos
 
-def generar_dispersión(valores, tiempos):
+def generar_dispersion(valores, tiempos):
     """Genera gráfico de dispersión."""
     scatter_path = os.path.join(RESULTS_DIR, "scatter_plot.png")
     plt.figure(figsize=(8, 5))
@@ -74,8 +74,25 @@ def generar_regresión(valores, tiempos, grado=1):
     # Formatear ecuación de la regresión
     eq_str = " + ".join([f"{coef:.6f}x^{i}" if i > 0 else f"{coef:.6f}" for i, coef in enumerate(reversed(coeficientes))])
 
-  
+    # Guardar imagen con ecuación y R²
+    regression_path = os.path.join(RESULTS_DIR, "regression_plot.png")
+    plt.figure(figsize=(8, 5))
+    plt.scatter(valores, tiempos, color='blue', label="Datos observados", alpha=0.7)
+    plt.plot(valores_suavizados, tiempos_predichos, color='red', linewidth=2, label=f"Regresión grado {grado}")
+
+    # Agregar texto con ecuación y R²
+    ecuacion_texto = f"$y = {eq_str}$\n$R^2 = {r2:.4f}$"
+    plt.text(min(valores) + 2, max(tiempos) * 0.8, ecuacion_texto, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
+
+    plt.xlabel("Número de Fibonacci (n)")
+    plt.ylabel("Tiempo de ejecución (s)")
+    plt.title("Ajuste de regresión polinomial")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.savefig(regression_path)
+    plt.close()
     
     print(f"\n📈 **Ecuación de la regresión:**")
     print(f"   y = {eq_str}")
-    
+    print(f"📊 **Coeficiente de determinación R²:** {r2:.4f}")
+    print(f"📁 Imagen guardada: {regression_path}")
