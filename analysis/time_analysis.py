@@ -8,7 +8,7 @@ from sklearn.metrics import r2_score
 # Agregar la ruta raíz del proyecto para importar turing_machine.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from turing_machine import MultiTapeTuringMachine
+from turing_machine import SingleTapeTuringMachine
 
 # Ruta absoluta del archivo de configuración
 CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "machine_config.json"))
@@ -26,18 +26,18 @@ def medir_tiempos(max_n):
 
     print("\n📊 **Datos de prueba:**")
     for n in valores:
-        inicio = time.perf_counter()  # ⏱ Mayor precisión
-        maquina = MultiTapeTuringMachine(CONFIG_PATH, n)
-        maquina.run()
-        fin = time.perf_counter()  # ⏱ Mayor precisión
+        inicio = time.perf_counter()
+        maquina = SingleTapeTuringMachine(CONFIG_PATH, n)
+        resultado, _ = maquina.run()
+        fin = time.perf_counter()
 
         tiempo_total = fin - inicio
         tiempos.append(tiempo_total)
-        print(f"  - Fibonacci({n}): {tiempo_total:.8f} s")  # Mayor precisión en la impresión
+        print(f"  - Fibonacci({n}) = {resultado}, Tiempo: {tiempo_total:.8f} s")
 
     return valores, tiempos
 
-def generar_dispersion(valores, tiempos):
+def generar_dispersión(valores, tiempos):
     """Genera gráfico de dispersión."""
     scatter_path = os.path.join(RESULTS_DIR, "scatter_plot.png")
     plt.figure(figsize=(8, 5))
@@ -53,34 +53,25 @@ def generar_dispersion(valores, tiempos):
 
 def generar_regresión(valores, tiempos, grado=1):
     """Genera regresión polinomial con mejor ajuste y muestra ecuación + R²."""
-
-    # Filtrar posibles datos anómalos
     if len(valores) > 1:
         valores = valores[1:]  # ❌ Eliminamos el primer dato anómalo
         tiempos = tiempos[1:]  # ❌ Eliminamos el primer tiempo anómalo
 
-    # Ajustar polinomio
     coeficientes = np.polyfit(valores, tiempos, deg=grado)
     polinomio = np.poly1d(coeficientes)
-
-    # Generar valores suavizados para la curva de ajuste
     valores_suavizados = np.linspace(min(valores), max(valores), 100)
     tiempos_predichos = polinomio(valores_suavizados)
 
-    # Calcular R²
     tiempos_ajustados = polinomio(valores)
     r2 = r2_score(tiempos, tiempos_ajustados)
 
-    # Formatear ecuación de la regresión
     eq_str = " + ".join([f"{coef:.6f}x^{i}" if i > 0 else f"{coef:.6f}" for i, coef in enumerate(reversed(coeficientes))])
-
-    # Guardar imagen con ecuación y R²
+    
     regression_path = os.path.join(RESULTS_DIR, "regression_plot.png")
     plt.figure(figsize=(8, 5))
     plt.scatter(valores, tiempos, color='blue', label="Datos observados", alpha=0.7)
     plt.plot(valores_suavizados, tiempos_predichos, color='red', linewidth=2, label=f"Regresión grado {grado}")
-
-    # Agregar texto con ecuación y R²
+    
     ecuacion_texto = f"$y = {eq_str}$\n$R^2 = {r2:.4f}$"
     plt.text(min(valores) + 2, max(tiempos) * 0.8, ecuacion_texto, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
 
@@ -96,7 +87,7 @@ def generar_regresión(valores, tiempos, grado=1):
     print(f"   y = {eq_str}")
     print(f"📊 **Coeficiente de determinación R²:** {r2:.4f}")
     print(f"📁 Imagen guardada: {regression_path}")
-    
+
 def menu():
     """Menú interactivo para elegir qué análisis realizar."""
     while True:
@@ -110,7 +101,7 @@ def menu():
         opcion = input("Seleccione una opción (1-5): ").strip()
         
         if opcion == "1":
-            valores, tiempos = medir_tiempos(100)  # 🔹 Probamos con más datos
+            valores, tiempos = medir_tiempos(100)
         elif opcion == "2":
             valores, tiempos = medir_tiempos(100)
             generar_dispersión(valores, tiempos)
@@ -118,7 +109,7 @@ def menu():
             valores, tiempos = medir_tiempos(100)
             generar_regresión(valores, tiempos)
         elif opcion == "4":
-            valores, tiempos = medir_tiempos(1000)
+            valores, tiempos = medir_tiempos(100)
             generar_dispersión(valores, tiempos)
             generar_regresión(valores, tiempos)
         elif opcion == "5":
